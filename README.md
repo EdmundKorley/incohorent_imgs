@@ -5,12 +5,12 @@ A small web app powered by microservices written in Go that will ultimately allo
 To run:
 
 Make the bash script an executable
-```bash
+```sh
 $ chmod +x microservicesUp.bash
 ```
 
 And then run it
-```bash
+```sh
 $ microservicesUp.bash
 ```
 
