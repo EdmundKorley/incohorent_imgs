@@ -40,6 +40,7 @@ func main() {
     http.HandleFunc("/finishTask", finishTask)
     http.HandleFunc("/setByID", setByID)
     http.HandleFunc("/list", list)
+    fmt.Println("taskService is up! 📫")
     http.ListenAndServe(":3001", nil)
 }
 
@@ -277,7 +278,7 @@ func list(w http.ResponseWriter, r *http.Request) {
 
 func registerInKVStore() bool {
     if len(os.Args) < 3 {
-        fmt.Println("Error: Too few arguments.")
+        fmt.Println("Error 🚫: Too few arguments.")
         return false
     }
     databaseAddress := os.Args[1] // Address of executable itself

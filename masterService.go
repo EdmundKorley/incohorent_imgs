@@ -5,11 +5,14 @@ import (
     "fmt"
     "net/http"
     "io/ioutil"
+    "io"
+    "encoding/json"
+    "net/url"
 )
 
 type Task struct {
-    ID struct `json:"id"`
-    State struct `json:"state"`
+    ID int `json:"id"`
+    State int `json:"state"`
 }
 
 var databaseLocation string
@@ -24,7 +27,7 @@ func main()  {
     // A redundant getting of storageLocation and databaseLocation
     // (after getting them in registerInKVStore)
     // This is to allow access to these addresses via lexical scope from our route handlers
-    kVStoreAddress = os.Args[2]
+    kVStoreAddress := os.Args[2]
 
     response, err := http.Get("http://" + kVStoreAddress + "/get?key=databaseAddress")
     if response.StatusCode != http.StatusOK {
@@ -33,14 +36,14 @@ func main()  {
         return
     }
 
-    data, err := ioutil.RealAll(response.Body)
+    data, err := ioutil.ReadAll(response.Body)
     if err != nil {
         fmt.Println(err)
         return
     }
     databaseLocation = string(data)
 
-    response, err := http.Get("http://" + kVStoreAddress + "/get?key=storageAddress")
+    response, err = http.Get("http://" + kVStoreAddress + "/get?key=storageAddress")
     if response.StatusCode != http.StatusOK {
         fmt.Println("Error 🚫: Can't get storage address.")
         fmt.Println(response.Body)
@@ -62,6 +65,7 @@ func main()  {
     http.HandleFunc("/isReady", isReady)
     http.HandleFunc("/getNewTask", getNewTask)
     http.HandleFunc("/registerTaskFinished", registerTaskFinished)
+    fmt.Println("masterService is up! 😜")
     http.ListenAndServe(":3003", nil)
 }
 
@@ -97,7 +101,7 @@ func newImage(w http.ResponseWriter, r *http.Request)  {
 
 func getImage(w http.ResponseWriter, r *http.Request)  {
     if r.Method == http.MethodGet {
-        values, err != url.ParseQuery(r.URL.RawQuery)
+        values, err := url.ParseQuery(r.URL.RawQuery)
         if err != nil {
             fmt.Fprint(w, err)
             return
@@ -173,7 +177,7 @@ func isReady(w http.ResponseWriter, r *http.Request)  {
 // Part of worker interface
 func getNewTask(w http.ResponseWriter, r *http.Request)  {
     if r.Method == http.MethodPost {
-        response, err := http.MethodPost("http://" + databaseLocation + "/getNewTask", "text/plain", nil)
+        response, err := http.Post("http://" + databaseLocation + "/getNewTask", "text/plain", nil)
         if err != nil {
             w.WriteHeader(http.StatusBadRequest)
             fmt.Fprint(w, err)
@@ -236,7 +240,7 @@ func registerInKVStore() bool {
     masterAddress := os.Args[1]
     kVStoreAddress := os.Args[2]
 
-    response, err := http.Post("http://" + kVStoreAddress + "/set?key=storageAddress&value=" + masterAddress, "", nil)
+    response, err := http.Post("http://" + kVStoreAddress + "/set?key=masterAddress&value=" + masterAddress, "", nil)
     if err != nil {
         fmt.Println(err)
         return false

@@ -17,6 +17,7 @@ func main() {
 	http.HandleFunc("/set", set)
 	http.HandleFunc("/remove", remove)
 	http.HandleFunc("/list", list)
+	fmt.Println("kVService is up! 🗃")
 	http.ListenAndServe(":3000", nil)
 }
 

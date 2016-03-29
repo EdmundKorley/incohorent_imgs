@@ -7,6 +7,7 @@ import (
     "os"
     "net/url"
     "io"
+    "strconv"
 )
 
 func main()  {
@@ -16,6 +17,7 @@ func main()  {
 
     http.HandleFunc("/sendImage", receiveImage)
     http.HandleFunc("/getImage", serveImage)
+    fmt.Println("storageService is up! 🖼")
     http.ListenAndServe(":3002", nil)
 }
 
