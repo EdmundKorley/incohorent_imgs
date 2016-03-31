@@ -12,6 +12,7 @@ import (
     "image/color"
     "bytes"
     "sync"
+    "io/ioutil"
 )
 
 type Task struct {
@@ -31,7 +32,7 @@ func main()  {
     kVStoreAddress = os.Args[1]
 
     // Retreive master address
-    response, err := http.Get("http://" + keyValueStoreAddress + "/get?key=masterAddress")
+    response, err := http.Get("http://" + kVStoreAddress + "/get?key=masterAddress")
     if response.StatusCode != http.StatusOK {
         fmt.Println("Error 🚫: Can't get master address.")
         fmt.Println(response.Body)
@@ -48,7 +49,7 @@ func main()  {
     }
 
     // Retreive the key-value store address
-    response, err = http.Get("http://" + keyValueStoreAddress + "/get?key=storageAddress")
+    response, err = http.Get("http://" + kVStoreAddress + "/get?key=storageAddress")
     if response.StatusCode != http.StatusOK {
         fmt.Println("Error: can't get storage address.")
         fmt.Println(response.Body)
@@ -71,6 +72,8 @@ func main()  {
         fmt.Println("Error 🚫: Couldn't parse thread count from command line arg")
         return
     }
+
+    fmt.Println("workerService is up! 🔨")
 
     // Waiting for goroutines, as to don't terminate execution
     myWG := sync.WaitGroup{}
@@ -139,7 +142,7 @@ func getNewTask(masterAddress string) (Task, error) {
 
 // We get the response whose body is the raw image, so we just Decode it and return it if we succeed.
 func getImageFromStorage(storageAddress string, myTask Task) (image.Image, error) {
-    response, err := http.Get("http://" + storageAddress + "/getImage?state=working&id=" + strconv.Itoa(myTask.Id))
+    response, err := http.Get("http://" + storageAddress + "/getImage?state=working&id=" + strconv.Itoa(myTask.ID))
     if err != nil || response.StatusCode != http.StatusOK {
         return nil, err
     }
@@ -179,7 +182,7 @@ func sendImageToStorage(storageAddress string, myTask Task, myImage image.Image)
     if err != nil {
         return err
     }
-    response, err := http.Post("http://" + storageAddress + "/sendImage?state=finished&id=" + strconv.Itoa(myTask.Id), "image/png", buffer)
+    response, err := http.Post("http://" + storageAddress + "/sendImage?state=finished&id=" + strconv.Itoa(myTask.ID), "image/png", buffer)
     if err != nil || response.StatusCode != http.StatusOK {
         return err
     }
@@ -189,7 +192,7 @@ func sendImageToStorage(storageAddress string, myTask Task, myImage image.Image)
 
 // We're done with processing image
 func registerFinishedTask(masterAddress string, myTask Task) error {
-    response, err := http.Post("http://" + masterAddress + "/registerTaskFinished?id=" + strconv.Itoa(myTask.Id), "test/plain", nil)
+    response, err := http.Post("http://" + masterAddress + "/registerTaskFinished?id=" + strconv.Itoa(myTask.ID), "test/plain", nil)
     if err != nil || response.StatusCode != http.StatusOK {
         return err
     }
