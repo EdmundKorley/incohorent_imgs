@@ -21,7 +21,7 @@ func main() {
     }
     kVStoreAddress = os.Args[1]
 
-    response, err := http.Get("http://" + keyValueStoreAddress + "/get?key=masterAddress")
+    response, err := http.Get("http://" + kVStoreAddress + "/get?key=masterAddress")
     if response.StatusCode != http.StatusOK {
         fmt.Println("Error 🚫: can't get master address.")
         fmt.Println(response.Body)
@@ -83,9 +83,10 @@ func handleTask(w http.ResponseWriter, r *http.Request) {
     }
 
     fmt.Fprint(w, string(data))
-} else {
-    w.WriteHeader(http.StatusBadRequest)
-    fmt.Fprint(w, "Error: Only POST accepted")
+    } else {
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprint(w, "Error: Only POST accepted")
+    }
 }
 
 // Check if task is finished and ready
