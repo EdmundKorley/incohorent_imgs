@@ -99,9 +99,10 @@ func getByID(w http.ResponseWriter, r *http.Request) {
 
 func newTask(w http.ResponseWriter, r *http.Request) {
     if r.Method == http.MethodPost {
-        dataStoreMutex.Lock()
 
         // Create new Task with next ID and add it to our dataStore
+        fmt.Println("Before task mutex!")
+        dataStoreMutex.Lock()
         taskToAdd := Task{
             ID: len(dataStore),
             State: 0,

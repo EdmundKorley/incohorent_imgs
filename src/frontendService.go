@@ -9,7 +9,7 @@ import (
     "io"
 )
 
-const indexPage = "<html><head><title>Upload file</title></head><body><form enctype=\"multipart/form-data\" action=\"submitTask\" method=\"post\"> <input type=\"file\" name=\"uploadfile\" /> <input type=\"submit\" value=\"upload\" /> </form> </body> </html>"
+const indexPage = "<html><head><title>incoherent_imgs</title></head><body><form enctype=\"multipart/form-data\" action=\"submitTask\" method=\"post\"> <input type=\"file\" name=\"uploadfile\" /> <input type=\"submit\" value=\"upload\" /> </form> </body> </html>"
 
 var kVStoreAddress string
 var masterLocation string
@@ -44,7 +44,7 @@ func main() {
     http.HandleFunc("/submitTask", handleTask)
     http.HandleFunc("/isReady", handleCheckForReadiness)
     http.HandleFunc("/getImage", serveImage)
-    http.ListenAndServe(":80", nil)
+    http.ListenAndServe(":3004", nil)
 }
 
 // Serve root
@@ -55,34 +55,39 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 // Parsing the user form and sending the raw image data to the master.
 func handleTask(w http.ResponseWriter, r *http.Request) {
     if r.Method == http.MethodPost {
-    err := r.ParseMultipartForm(10000000)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        fmt.Fprint(w, "Wrong input")
-        return
-    }
-    file, _, err := r.FormFile("uploadfile")
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        fmt.Fprint(w, "Wrong input")
-        return
-    }
+        fmt.Println("Yeah! Was able to get response")
+        err := r.ParseMultipartForm(10000000)
+        if err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprint(w, "Wrong input")
+            return
+        }
+        file, _, err := r.FormFile("uploadfile")
+        fmt.Println("Yeah! Got the image")
+        if err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprint(w, "Wrong input")
+            return
+        }
 
-    response, err := http.Post("http://" + masterLocation + "/new", "image", file)
-    if err != nil || response.StatusCode != http.StatusOK {
-        w.WriteHeader(http.StatusBadRequest)
-        fmt.Fprint(w, "Error:", err)
-        return
-    }
+        fmt.Println("Yeah! Sending request")
+        response, err := http.Post("http://" + masterLocation + "/new", "image", file)
+        if err != nil || response.StatusCode != http.StatusOK {
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprint(w, "Error getting response from master service:", err)
+            return
+        }
 
-    data, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        w.WriteHeader(http.StatusBadRequest)
-        fmt.Fprint(w, "Error:", err)
-        return
-    }
+        fmt.Println("Yeah! Reading body")
+        data, err := ioutil.ReadAll(response.Body)
+        if err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            fmt.Fprint(w, "Error reading body:", err)
+            return
+        }
 
-    fmt.Fprint(w, string(data))
+        fmt.Println("Yeah! Handed image off to master 🐣")
+        fmt.Fprint(w, string(data))
     } else {
         w.WriteHeader(http.StatusBadRequest)
         fmt.Fprint(w, "Error: Only POST accepted")
